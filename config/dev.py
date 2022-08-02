@@ -5,7 +5,7 @@ DEBUG = True
 
 HOST = "0.0.0.0"
 
-PORT = 5000
+PORT = 5001
 
 PROJECT_FOLDER = abspath(dirname(dirname(__file__)))
 

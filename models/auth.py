@@ -1,4 +1,6 @@
 from datetime import datetime
+from werkzeug.security import generate_password_hash, check_password_hash
+
 from app.db import db
 
 
@@ -18,18 +20,28 @@ class User(db.Model):
         is_active: Activeness of the user.
         created_at: The created time of the user.
         last_login: The last login time of the user.
+    
+    Methods:
+        __repr__: Return a string representation of the user model.
+        __str__: Return a string representation of the user model.
+        to_dict: Return a dictionary representation of the user model.
+        save: Save the user model.
+        delete: Delete the user model.
+        update: Update the user model.
+        set_password: Set the password of the user.
+        check_password: Check the password of the user.
     """
 
     __tablename__ = "auth_user"
 
     id = db.Column("id", db.Integer, primary_key=True)
-    first_name = db.Column("first_name", db.String(255))
+    first_name = db.Column("first_name", db.String(255), nullable=False)
     last_name = db.Column("last_name", db.String(255))
     username = db.Column("username", db.String(50), unique=True, nullable=False)
     password = db.Column("password", db.String(255), nullable=False)
     photo = db.Column("photo", db.String(255))
     phone_number = db.Column("phone_number", db.String(255))
-    email = db.Column("email", db.String(255))
+    email = db.Column("email", db.String(255), unique=True, nullable=False)
     is_active = db.Column("is_active", db.Boolean, default=True)
     created_at = db.Column("created_at", db.DateTime, default=datetime.now())
     last_login = db.Column("last_login", db.DateTime)
@@ -114,3 +126,17 @@ class User(db.Model):
         for key, value in data.items():
             setattr(self, key, value)
         db.session.commit()
+
+    def set_password(self, password: str) -> None:
+        """
+        Set the password of the user.
+        """
+
+        self.password = generate_password_hash(password)
+    
+    def check_password(self, password: str) -> bool:
+        """
+        Check the password of the user.
+        """
+
+        return check_password_hash(self.password, password)
