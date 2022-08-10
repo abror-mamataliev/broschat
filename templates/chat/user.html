@@ -1,0 +1,65 @@
+{% extends 'layout/base.html' %}
+
+{% block title %}
+    {{ user.username }}
+{% endblock %}
+
+{% block content %}
+    <div class="container">
+        <div class="row mt-5">
+            <div class="col-md-6 offset-md-3">
+                <div class="card">
+                    <div class="card-header">
+                        <h3>{{ user.first_name }} {{ user.last_name }}</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="card-text">
+                            <div class="chat-messages">
+                                {% for message in messages %}
+                                    <div class="chat-message">
+                                        <div class="chat-message-author">
+                                            {{ message.author }}
+                                        </div>
+                                        <div class="chat-message-text">
+                                            {{ message.text }}
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        <div class="card-footer">
+                            <form action="" method="post">
+                                <div class="input-group">
+                                    <input type="text" class="form-control" name="message" placeholder="Message">
+                                    <button type="submit" class="btn btn-primary">Send</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block script %}
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js" integrity="sha512-q/dWJ3kcmjBLU4Qc47E4A9kTB4m3wuTY7vkFJDTZKjTs8jhyGQnaUrxa0Ytd0ssMZhbNua9hE+E7Qv1j+DyZwA==" crossorigin="anonymous"></script>
+    <script>
+        var protocol = location.protocol;
+        var host = location.host;
+        var socket = io();
+        var room = {{ room }};
+        console.log(room);
+        document.addEventListener("DOMContentLoaded", function(event) {
+            socket.on("connect", function() {
+                socket.emit("join", {
+                    room: room
+                });
+            });
+            socket.on("status", function(data) {
+                console.log(data);
+            });
+            socket.connect(`${protocol}//${host}/chat`);
+        })
+    </script>
+{% endblock %}

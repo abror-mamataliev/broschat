@@ -1,10 +1,15 @@
 from datetime import datetime
-from werkzeug.security import generate_password_hash, check_password_hash
+from flask_login import UserMixin
+from typing import List, Union
+from werkzeug.security import (
+    generate_password_hash,
+    check_password_hash
+)
 
 from app.db import db
 
 
-class User(db.Model):
+class User(UserMixin, db.Model):
     """
     User model.
 
@@ -79,12 +84,12 @@ class User(db.Model):
         }
 
     @classmethod
-    def get_by_username(cls, username: str) -> "User":
+    def get_by_username(cls, username: str) -> Union["User", None]:
         """
         Return a user model by username.
         """
 
-        return cls.query.filter_by(username=username).first()
+        return cls.query.filter(User.username == username).first()
 
     @classmethod
     def get_by_id(cls, id: int) -> "User":
@@ -95,7 +100,7 @@ class User(db.Model):
         return cls.query.filter_by(id=id).first()
     
     @classmethod
-    def get_all(cls) -> "User":
+    def get_all(cls) -> List["User"]:
         """
         Return all user models.
         """

@@ -1,5 +1,44 @@
 from datetime import datetime
+
 from app.db import db
+from models import User
+
+
+class Room(db.Model):
+
+    __tablename__ = "chat_room"
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_1 = db.Column(db.Integer, db.ForeignKey("auth_user.id"))
+    user_2 = db.Column(db.Integer, db.ForeignKey("auth_user.id"))
+
+    messages = db.relationship("Message", backref="room", lazy=True)
+
+    def __repr__(self) -> str:
+        """
+        Return a string representation of the room model.
+        """
+
+        user_1 = db.session.query(User.username).filter_by(id=self.user_1).first()[0]
+        user_2 = db.session.query(User.username).filter_by(id=self.user_2).first()[0]
+        return f"<Room ({user_1} - {user_2})>"
+    
+    def __str__(self) -> str:
+        """
+        Return a string representation of the room model.
+        """
+
+        user_1 = db.session.query(User.username).filter_by(id=self.user_1).first()[0]
+        user_2 = db.session.query(User.username).filter_by(id=self.user_2).first()[0]
+        return f"{user_1} - {user_2}"
+
+    def save(self) -> None:
+        """
+        Save the room model.
+        """
+
+        db.session.add(self)
+        db.session.commit()
 
 
 class Message(db.Model):
@@ -19,17 +58,16 @@ class Message(db.Model):
 
     id = db.Column("id", db.Integer, primary_key=True)
     text = db.Column("text", db.String(255))
-    from_ = db.Column("from", db.Integer, db.ForeignKey("auth_user.id"), nullable=False)
-    to = db.Column("to", db.Integer, db.ForeignKey("auth_user.id"), nullable=False)
+    room_id = db.Column(db.Integer, db.ForeignKey("chat_room.id"))
     created_at = db.Column("created_at", db.DateTime, default=datetime.now())
-    updated_at = db.Column("updated_at", db.DateTime)
+    updated_at = db.Column("updated_at", db.DateTime, default=datetime.now())
 
     def __repr__(self) -> str:
         """
         Return a string representation of the message model.
         """
 
-        return "<Message >" % self.text
+        return f"<Message {self.text}>"
 
     def __str__(self) -> str:
         """
@@ -46,8 +84,15 @@ class Message(db.Model):
         return {
             'id': self.id,
             'text': self.text,
-            'from': self.from_,
-            'to': self.to,
+            'room': self.room,
             'created_at': self.created_at,
             'updated_at': self.updated_at
         }
+
+    def save(self) -> None:
+        """
+        Save the message model.
+        """
+
+        db.session.add(self)
+        db.session.commit()

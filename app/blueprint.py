@@ -1,4 +1,7 @@
-from flask import Blueprint, Flask
+from flask import (
+    Blueprint,
+    Flask
+)
 
 
 auth: Blueprint = Blueprint("auth", __name__, url_prefix="/auth")

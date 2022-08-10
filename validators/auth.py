@@ -1,63 +1,45 @@
-USER_LOGIN_SCHEMA = {
-    'type': "object",
-    'properties': {
-        'username': {
-            'type': "string",
-            'minLength': 5,
-            'maxLength': 50
-        },
-        'password': {
-            'type': "string",
-            'minLength': 8
-        }
-    },
-    'required': [
-        "username",
-        "password"
-    ]
-}
+from jsonschema import validate
+
+from models import User
+from schemas import (
+    USER_LOGIN_SCHEMA,
+    USER_REGISTER_SCHEMA
+)
 
 
-USER_REGISTER_SCHEMA = {
-    'type': "object",
-    'properties': {
-        'first_name': {
-            'type': "string",
-            'minLength': 5,
-            'maxLength': 50
-        },
-        'last_name': {
-            'type': "string",
-            'minLength': 5,
-            'maxLength': 50
-        },
-        'phone_number': {
-            'type': "string"
-        },
-        'email': {
-            'type': "string",
-            'format': "email"
-        },
-        'username': {
-            'type': "string",
-            'minLength': 5,
-            'maxLength': 50
-        },
-        'password': {
-            'type': "string",
-            'minLength': 8
-        },
-        'password_confirm': {
-            'type': "string",
-            'minLength': 8
+def validate_user_register(data: dict) -> dict:
+    """
+    Validate user registration data.
+
+    :param data: user registration data
+    :return: validated data
+    """
+
+    try:
+        validate(data, USER_REGISTER_SCHEMA)
+    except Exception as e:
+        return {
+            'data': data,
+            'message': f"Error: {str(e)}"
         }
-    },
-    'required': [
-        "first_name",
-        "phone_number",
-        "email",
-        "username",
-        "password",
-        "password_confirm"
-    ]
-}
+    user = User.get_by_username(data['username'])
+    if user is not None:
+        return {
+            'data': data,
+            'message': "Error: User already exists"
+        }
+    password = data['password']
+    password_confirm = data['password_confirm']
+    if password != password_confirm:
+        return {
+            'data': data,
+            'message': "Error: Passwords do not match"
+        }
+    response = {
+        'data': {},
+        'message': "OK"
+    }
+    for key, value in data.items():
+        if key != 'password_confirm':
+            response['data'][key] = value
+    return response

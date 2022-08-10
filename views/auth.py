@@ -1,5 +1,13 @@
-from flask import redirect, render_template, request, url_for
-from flask_login import login_user, logout_user
+from flask import (
+    redirect,
+    render_template,
+    request,
+    url_for
+)
+from flask_login import (
+    login_user,
+    logout_user
+)
 
 from forms import LoginForm
 

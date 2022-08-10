@@ -4,29 +4,26 @@ from flask import (
 )
 
 from models import User
+from validators.auth import validate_user_register
 
 
 def user_create():
     """
     Create a new user.
+
+    :return: user model
     """
 
     if request.method == 'POST':
         data = request.get_json()
-        if data.get('password') == data.get('password_confirm'):
-            user = User(
-                first_name=data.get('first_name'),
-                last_name=data.get('last_name'),
-                phone_number=data.get('phone_number'),
-                email=data.get('email'),
-                username=data.get('username')
-            )
-            user.set_password(data.get('password'))
-            user.save()
-            return jsonify(user.to_dict()), 201
-        return jsonify({
-            'message': "Passwords do not match"
-        }), 400
+        validated_data = validate_user_register(data)
+        if validated_data['message'] != "OK":
+            return jsonify(validated_data), 400
+        user = User(**validated_data['data'])
+        password = validated_data['data']['password']
+        user.set_password(password)
+        user.save()
+        return jsonify(user.to_dict()), 201
     return jsonify({
-        'message': "Method not allowed"
+        'message': "Error: Method not allowed"
     }), 405
